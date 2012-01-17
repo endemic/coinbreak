@@ -12,8 +12,14 @@
 #import "GameSingleton.h"
 #import "HelloWorldLayer.h"
 
-@interface TitleScene : CCLayer 
+@interface TitleScene : CCLayer <UIAlertViewDelegate>
 {
+    CGSize window;
+    int fontMultiplier;
+    NSString *hdSuffix;
 }
+
++ (CCScene *)scene;
+- (void)createParticleSystem;
 
 @end

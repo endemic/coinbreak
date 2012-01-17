@@ -14,6 +14,7 @@
 #import "HelloWorldLayer.h"
 #import "RootViewController.h"
 #import "GameSingleton.h"
+#import "SimpleAudioEngine.h"
 
 @implementation AppDelegate
 
@@ -115,10 +116,16 @@
 	// You can change anytime.
 	[CCTexture2D setDefaultAlphaPixelFormat:kCCTexture2DPixelFormat_RGBA8888];
     
-	
 	// Removes the startup flicker
 	[self removeStartupFlicker];
 	
+    [CDSoundEngine setMixerSampleRate:CD_SAMPLE_RATE_MID];
+    
+    [[SimpleAudioEngine sharedEngine] setEffectsVolume:0.5];
+    [[SimpleAudioEngine sharedEngine] preloadEffect:@"beep.caf"];
+    [[SimpleAudioEngine sharedEngine] preloadEffect:@"coin.caf"];
+    [[SimpleAudioEngine sharedEngine] preloadEffect:@"tick.caf"];
+    
 	// Run the intro Scene
 	[[CCDirector sharedDirector] runWithScene:[LogoScene scene]];
 }

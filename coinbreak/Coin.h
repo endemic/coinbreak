@@ -37,7 +37,10 @@
 - (void)randomizeValue;
 - (void)spin;
 - (void)stop;
+
 - (void)flash;
+- (void)explode;
+- (void)embiggen;
 
 @property (nonatomic, retain) CCSprite *backgroundSprite;
 @property (nonatomic, retain) CCSprite *valueSprite;

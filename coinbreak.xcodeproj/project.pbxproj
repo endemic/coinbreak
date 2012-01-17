@@ -158,6 +158,16 @@
 		7D341E0114BB390100197403 /* LogoScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D341DFB14BB390100197403 /* LogoScene.m */; };
 		7D341E0214BB390100197403 /* TitleScene.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D341DFE14BB390100197403 /* TitleScene.m */; };
 		7D341E0514BB39AA00197403 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7D341E0314BB39A300197403 /* GameKit.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		7D367F0B14C0E6AA00650B84 /* BebasNeue.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F0A14C0E6AA00650B84 /* BebasNeue.otf */; };
+		7D367F1214C0E6DC00650B84 /* background-hd.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F0D14C0E6DC00650B84 /* background-hd.png */; };
+		7D367F1314C0E6DC00650B84 /* background.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F0E14C0E6DC00650B84 /* background.png */; };
+		7D367F1414C0E6DC00650B84 /* ring-effect.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F0F14C0E6DC00650B84 /* ring-effect.png */; };
+		7D367F1514C0E6DC00650B84 /* logo-hd.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F1014C0E6DC00650B84 /* logo-hd.png */; };
+		7D367F1614C0E6DC00650B84 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F1114C0E6DC00650B84 /* logo.png */; };
+		7DA354BA14C5872A00A5F1C3 /* beep.caf in Resources */ = {isa = PBXBuildFile; fileRef = 7DA354B714C5872A00A5F1C3 /* beep.caf */; };
+		7DA354BB14C5872A00A5F1C3 /* coin.caf in Resources */ = {isa = PBXBuildFile; fileRef = 7DA354B814C5872A00A5F1C3 /* coin.caf */; };
+		7DA354BC14C5872A00A5F1C3 /* tick.caf in Resources */ = {isa = PBXBuildFile; fileRef = 7DA354B914C5872A00A5F1C3 /* tick.caf */; };
+		7DEA0B7414C122FA003BB3D9 /* todo.txt in Resources */ = {isa = PBXBuildFile; fileRef = 7DEA0B7314C122FA003BB3D9 /* todo.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -437,6 +447,16 @@
 		7D341DFD14BB390100197403 /* TitleScene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TitleScene.h; sourceTree = "<group>"; };
 		7D341DFE14BB390100197403 /* TitleScene.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TitleScene.m; sourceTree = "<group>"; };
 		7D341E0314BB39A300197403 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
+		7D367F0A14C0E6AA00650B84 /* BebasNeue.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = BebasNeue.otf; sourceTree = "<group>"; };
+		7D367F0D14C0E6DC00650B84 /* background-hd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "background-hd.png"; sourceTree = "<group>"; };
+		7D367F0E14C0E6DC00650B84 /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = background.png; sourceTree = "<group>"; };
+		7D367F0F14C0E6DC00650B84 /* ring-effect.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ring-effect.png"; sourceTree = "<group>"; };
+		7D367F1014C0E6DC00650B84 /* logo-hd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-hd.png"; sourceTree = "<group>"; };
+		7D367F1114C0E6DC00650B84 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
+		7DA354B714C5872A00A5F1C3 /* beep.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = beep.caf; sourceTree = "<group>"; };
+		7DA354B814C5872A00A5F1C3 /* coin.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = coin.caf; sourceTree = "<group>"; };
+		7DA354B914C5872A00A5F1C3 /* tick.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = tick.caf; sourceTree = "<group>"; };
+		7DEA0B7314C122FA003BB3D9 /* todo.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = todo.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -511,6 +531,7 @@
 				7D341DA914BB37F300197403 /* HelloWorldLayer.h */,
 				7D341DAA14BB37F300197403 /* HelloWorldLayer.m */,
 				7D341DAC14BB37F300197403 /* GameConfig.h */,
+				7DEA0B7314C122FA003BB3D9 /* todo.txt */,
 				7D341C5214BB37F100197403 /* Resources */,
 				7D341C6614BB37F100197403 /* libs */,
 				7D341D9F14BB37F300197403 /* Supporting Files */,
@@ -521,6 +542,8 @@
 		7D341C5214BB37F100197403 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				7DA354B614C5872A00A5F1C3 /* sfx */,
+				7D367F0914C0E6AA00650B84 /* fonts */,
 				7D341DBC14BB38F000197403 /* images */,
 				7D341DB214BB386300197403 /* Default-hd.png */,
 				7D341DB314BB386300197403 /* Default-Portrait~ipad.png */,
@@ -853,6 +876,12 @@
 		7D341DBC14BB38F000197403 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				7D367F0D14C0E6DC00650B84 /* background-hd.png */,
+				7D367F0E14C0E6DC00650B84 /* background.png */,
+				7D367F0F14C0E6DC00650B84 /* ring-effect.png */,
+				7D341DD814BB38F000197403 /* ring-effect-hd.png */,
+				7D367F1014C0E6DC00650B84 /* logo-hd.png */,
+				7D367F1114C0E6DC00650B84 /* logo.png */,
 				7D341DBD14BB38F000197403 /* 1-type-hd.png */,
 				7D341DBE14BB38F000197403 /* 1-type.png */,
 				7D341DBF14BB38F000197403 /* 1-value-hd.png */,
@@ -880,10 +909,29 @@
 				7D341DD514BB38F000197403 /* particle-hd.png */,
 				7D341DD614BB38F000197403 /* particle.png */,
 				7D341DD714BB38F000197403 /* resize-images.rb */,
-				7D341DD814BB38F000197403 /* ring-effect-hd.png */,
 			);
 			name = images;
 			path = Resources/images;
+			sourceTree = "<group>";
+		};
+		7D367F0914C0E6AA00650B84 /* fonts */ = {
+			isa = PBXGroup;
+			children = (
+				7D367F0A14C0E6AA00650B84 /* BebasNeue.otf */,
+			);
+			name = fonts;
+			path = Resources/fonts;
+			sourceTree = "<group>";
+		};
+		7DA354B614C5872A00A5F1C3 /* sfx */ = {
+			isa = PBXGroup;
+			children = (
+				7DA354B714C5872A00A5F1C3 /* beep.caf */,
+				7DA354B814C5872A00A5F1C3 /* coin.caf */,
+				7DA354B914C5872A00A5F1C3 /* tick.caf */,
+			);
+			name = sfx;
+			path = Resources/sfx/caf;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -976,6 +1024,16 @@
 				7D341DF214BB38F000197403 /* particle.png in Resources */,
 				7D341DF314BB38F000197403 /* resize-images.rb in Resources */,
 				7D341DF414BB38F000197403 /* ring-effect-hd.png in Resources */,
+				7D367F0B14C0E6AA00650B84 /* BebasNeue.otf in Resources */,
+				7D367F1214C0E6DC00650B84 /* background-hd.png in Resources */,
+				7D367F1314C0E6DC00650B84 /* background.png in Resources */,
+				7D367F1414C0E6DC00650B84 /* ring-effect.png in Resources */,
+				7D367F1514C0E6DC00650B84 /* logo-hd.png in Resources */,
+				7D367F1614C0E6DC00650B84 /* logo.png in Resources */,
+				7DEA0B7414C122FA003BB3D9 /* todo.txt in Resources */,
+				7DA354BA14C5872A00A5F1C3 /* beep.caf in Resources */,
+				7DA354BB14C5872A00A5F1C3 /* coin.caf in Resources */,
+				7DA354BC14C5872A00A5F1C3 /* tick.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

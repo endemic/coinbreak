@@ -3,7 +3,7 @@
 //  bit-break
 //
 //  Created by Nathan Demick on 1/3/12.
-//  Copyright __MyCompanyName__ 2012. All rights reserved.
+//  Copyright Ganbaru Games 2012. All rights reserved.
 //
 
 // Import the interfaces
@@ -34,8 +34,9 @@
 	if ((self = [super init])) 
     {
         // Store window size
-        CGSize window = [CCDirector sharedDirector].winSize;
-        int fontMultiplier = 1;
+        window = [CCDirector sharedDirector].winSize;
+        fontMultiplier = 1;
+        hdSuffix = @"";
         
         // Set variables based on set difficulty
         switch ([GameSingleton sharedGameSingleton].difficulty) 
@@ -80,26 +81,34 @@
         gridOffset = ccp(36, 45);
         gridSpacing = 15;
         
+        // Add background
+        CCSprite *background = [CCSprite spriteWithFile:[NSString stringWithFormat:@"background%@.png", hdSuffix]];
+        background.position = ccp(window.width / 2, window.height / 2);
+        [self addChild:background];
+        
         // The "break" (center) coin
         breakCoin = [Coin createWithType:kCoinTypeBreak];
         breakCoin.position = ccp(window.width / 2, (window.height / 2) - (breakCoin.valueSprite.contentSize.height * 1.05));
         [self addChild:breakCoin z:0];
         
         // Create some temporary labels that show game progress
-        turnsLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Turns: %i/%i", currentTurn, maxTurns] fontName:@"Helvetica" fontSize:16.0 * fontMultiplier];
-        quotaLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Quota: %i/%i", currentQuota, requiredQuota] fontName:@"Helvetica" fontSize:16 * fontMultiplier];
-        timeLeftLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Time Left: %f", timeLeft] fontName:@"Helvetica" fontSize:16 * fontMultiplier];
-        currentSumLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Sum: %i", currentSum] fontName:@"Helvetica" fontSize:16 * fontMultiplier];
+        turnsLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Turns: %i/%i", currentTurn, maxTurns] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:48.0 * fontMultiplier];
+        quotaLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Quota: %i/%i", currentQuota, requiredQuota] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:48 * fontMultiplier];
+        timeLeftLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Time Left: %f", timeLeft] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:48 * fontMultiplier];
+        currentSumLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Sum: %i", currentSum] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:48 * fontMultiplier];
         
         [self addChild:turnsLabel];
         [self addChild:quotaLabel];
         [self addChild:timeLeftLabel];
         [self addChild:currentSumLabel];
         
+        // Left side
         turnsLabel.position = ccp(turnsLabel.contentSize.width / 2, window.height - turnsLabel.contentSize.height / 2);
-        quotaLabel.position = ccp(quotaLabel.contentSize.width / 2, turnsLabel.position.y - quotaLabel.contentSize.height);
-        timeLeftLabel.position = ccp(timeLeftLabel.contentSize.width / 2, quotaLabel.position.y - timeLeftLabel.contentSize.height);
-        currentSumLabel.position = ccp(currentSumLabel.contentSize.width / 2, timeLeftLabel.position.y - currentSumLabel.contentSize.height);
+        currentSumLabel.position = ccp(currentSumLabel.contentSize.width / 2, window.height - currentSumLabel.contentSize.height);
+        
+        // Right side
+        quotaLabel.position = ccp(window.width - quotaLabel.contentSize.width / 2, window.height - quotaLabel.contentSize.height / 2);
+        timeLeftLabel.position = ccp(window.width - timeLeftLabel.contentSize.width / 2, window.height - timeLeftLabel.contentSize.height);
         
         // Arrays to hold "coin" objects
         grid = [[NSMutableArray arrayWithCapacity:16] retain];
@@ -107,6 +116,17 @@
         
         // Variables dealing w/ grid display
         int gridSize = 4;
+        
+        /*
+         Iterating thru the grid 0 - 15 looks like this
+         
+         3 7 11 15
+         2 6 10 14
+         1 5  9 13
+         0 4  8 12
+         
+         I would rather it go all the way around the outside, or from top to bottom
+         */
         
         // Populate the play grid with coins
         for (int i = 0; i < gridSize; i++)
@@ -126,7 +146,8 @@
                         // Create & position coin
                         Coin *c = [Coin createWithType:kCoinTypeInner];
                         int size = c.backgroundSprite.contentSize.width + gridSpacing;
-                        c.position = ccp(i * size + gridOffset.x, j * size + gridOffset.y);
+                        
+                        c.position = ccp(j * size + gridOffset.x, i * size + gridOffset.y);
                         
                         // Add to layer
                         [self addChild:c z:1];
@@ -141,7 +162,8 @@
                         // Create & position coin
                         Coin *c = [Coin createWithType:kCoinTypeOuter];
                         int size = c.backgroundSprite.contentSize.width + gridSpacing;
-                        c.position = ccp(i * size + gridOffset.x, j * size + gridOffset.y);
+                        
+                        c.position = ccp(j * size + gridOffset.x, i * size + gridOffset.y);
                         
                         // Add to layer
                         [self addChild:c z:1];
@@ -225,6 +247,7 @@
             if (currentSum == 0 && c.type != kCoinTypeInner)
             {
                 // TODO: Play a "bzzt" noise or show some sort of status message
+                [[SimpleAudioEngine sharedEngine] playEffect:@"beep.caf"];
                 continue;
             }
             
@@ -232,11 +255,12 @@
             if ([selectedNumbers containsObject:c])
             {
                 // TODO: Play a "bzzt" noise or show some sort of status message
+                [[SimpleAudioEngine sharedEngine] playEffect:@"beep.caf"];
                 continue;
             }
             
             // Play SFX
-            // [[SimpleAudioEngine sharedEngine] playEffect:@"button.caf"];
+            [[SimpleAudioEngine sharedEngine] playEffect:@"tick.caf"];
             
             // Add touched coin to the list of selected coins
             [selectedNumbers addObject:c];
@@ -252,6 +276,12 @@
             // Remainder of 0 means the sum is a clean multiple
             if (currentSum % breakCoin.currentValue == 0)
             {
+                // Play sfx
+                [[SimpleAudioEngine sharedEngine] playEffect:@"coin.caf"];
+                
+                // Display status message
+                [self showMessage:@"Break!"];
+                
                 // Determine if any bonus multipliers are in effect
                 int coinCount = [selectedNumbers count];
                 int multipleCount = currentSum / breakCoin.currentValue;
@@ -261,11 +291,19 @@
                     coinCounter++;
                     // TODO: Show some sort of status message
                 }
+                else
+                {
+                    coinCounter = 0;
+                }
                 
                 if (multipleCount == lastMultipleCount)
                 {
                     multipleCounter++;
                     // TODO: Show some sort of status message
+                }
+                else
+                {
+                    multipleCounter = 0;
                 }
                 
                 // Store previous values for next turn
@@ -314,7 +352,7 @@
                             currentQuota += 1 + coinCounter + multipleCounter;
                             
                             // Special effect?
-                            [selected flash];
+                            //[selected flash];
                             
                             // Remove the coin from the layer
                             [self removeChild:selected cleanup:YES];
@@ -324,6 +362,56 @@
                             break;
                     }
                 }
+                
+                // Increment values of existing coins
+                for (int j = 0; j < [grid count]; j++)
+                {
+                    if ([grid objectAtIndex:j] != [NSNull null])
+                    {
+                        Coin *gridCoin = [grid objectAtIndex:j];
+                        
+                        // Only increment "outer" coins
+                        if (gridCoin.type == kCoinTypeOuter)
+                        {
+                            // Remove coins that have a value of 9
+                            if (gridCoin.currentValue == 9)
+                            {
+                                // Special effect?
+                                //[gridCoin flash];
+                                
+                                // Remove the coin from the layer
+                                [self removeChild:gridCoin cleanup:YES];
+                                
+                                // Replace the coin in the grid with NSNull
+                                [grid replaceObjectAtIndex:[grid indexOfObjectIdenticalTo:gridCoin] withObject:[NSNull null]];
+                            }
+                            else
+                            {
+                                // Effect a slight delay between increment effects
+                                CCDelayTime *wait = [CCDelayTime actionWithDuration:(float)(j / 10.0)];
+                                CCCallBlockN *increment = [CCCallBlockN actionWithBlock:^(CCNode *node) {
+                                    // Increment all other coins
+                                    [(Coin *)node incrementValue];
+                                }];
+                                
+                                // run actions
+                                [gridCoin runAction:[CCSequence actions:wait, increment, nil]];
+                            }
+                        }
+                    }
+                }
+                
+                /*
+                 Iterating thru the grid 0 - 15 looks like this
+                 
+                 3 7 11 15
+                 2 6 10 14
+                 1 5  9 13
+                 0 4  8 12
+                 
+                 I would rather it go all the way around the outside, or from top to bottom
+                 */
+                
                 
                 // Randomly re-insert coins into any empty grid spaces
                 for (int j = 0; j < [grid count]; j++)
@@ -348,34 +436,8 @@
                             // Add to layer
                             [self addChild:replacement z:1];
                             
-                            [replacement flash];
-                        }
-                    }
-                    else
-                    {
-                        Coin *gridCoin = [grid objectAtIndex:j];
-                        
-                        // Otherwise, increment the value of outer coins
-                        if (gridCoin.type == kCoinTypeOuter)
-                        {
-                            // Remove coins that have a value of 9
-                            if (gridCoin.currentValue == 9)
-                            {
-                                // Special effect?
-                                [gridCoin flash];
-                                
-                                // Remove the coin from the layer
-                                [self removeChild:gridCoin cleanup:YES];
-                                
-                                // Replace the coin in the grid with NSNull
-                                NSLog(@"Removing a 9 coin");
-                                [grid replaceObjectAtIndex:[grid indexOfObjectIdenticalTo:gridCoin] withObject:[NSNull null]];
-                            }
-                            else
-                            {
-                                // Increment all other coins
-                                [gridCoin incrementValue];   
-                            }
+                            // "Grow" the coin into place
+                            [replacement embiggen];
                         }
                     }
                 }
@@ -447,9 +509,40 @@
 	switch (buttonIndex) 
 	{
 		default:
+        {
             // Go back to title screen
+            CCTransitionMoveInL *transition = [CCTransitionMoveInL transitionWithDuration:0.5 scene:[TitleScene scene]];
+            [[CCDirector sharedDirector] replaceScene:transition];
+        }
 			break;
     }
+}
+
+/**
+ * Pops up a label w/ some text
+ */
+- (void)showMessage:(NSString *)text
+{
+    // Create/add label
+    CCLabelTTF *label = [CCLabelTTF labelWithString:text fontName:@"BebasNeue.otf" fontSize:44 * fontMultiplier];
+    label.position = ccp(window.width / 2, window.height / 2 - label.contentSize.height);
+    [self addChild:label z:3];
+
+    // Move/fade the "Break!" text into place, and enable layer touch when finished
+    id move = [CCMoveTo actionWithDuration:0.4 position:ccp(window.width / 2, window.height / 2 - label.contentSize.height)];
+    id ease = [CCEaseBackOut actionWithAction:move];
+    id fadeIn = [CCFadeIn actionWithDuration:0.3];
+    id wait = [CCDelayTime actionWithDuration:0.8];
+    id fadeOut = [CCFadeOut actionWithDuration:0.2];
+    id remove = [CCCallBlockN actionWithBlock:^(CCNode *node) {
+        [node.parent removeChild:node cleanup:YES];
+    }];
+    id enableTouch = [CCCallBlock actionWithBlock:^{
+        //[self setIsTouchEnabled:YES];
+    }];
+    
+    // Run fade in/fade out animation on text
+    [label runAction:[CCSequence actions:[CCSpawn actions:ease, fadeIn, nil], wait, fadeOut, remove, enableTouch, nil]];
 }
 
 /**

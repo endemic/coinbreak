@@ -72,11 +72,11 @@
     // Set the current value
     currentValue++;
     
-    // Change the displayed number sprite
-    valueSprite.texture = [[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"%i-value.png", currentValue]];
-    
     // Should probably be some sort of graphical effect here
     [self flash];
+    
+    // Change the displayed number sprite
+    valueSprite.texture = [[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"%i-value.png", currentValue]];
 }
 
 /**
@@ -87,11 +87,11 @@
     // Set the current value
     currentValue = (float)(arc4random() % 100) / 100 * 8 + 1; // 1-9
     
-    // Change the displayed number sprite
-    valueSprite.texture = [[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"%i-value.png", currentValue]];    
-    
     // Graphical effect!
     [self flash];
+    
+    // Change the displayed number sprite
+    valueSprite.texture = [[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"%i-value.png", currentValue]];    
 }
 
 /**
@@ -118,10 +118,10 @@
 /**
  * Create a particle effect on the coin
  */
-- (void)flash
+- (void)explode
 {
     CGPoint position = ccp(0, 0);
-	int particleCount = 500;
+	int particleCount = 100;
 	
 	// Create quad particle system (faster on 3rd gen & higher devices, only slightly slower on 1st/2nd gen)
 	CCParticleSystemQuad *particleSystem = [[CCParticleSystemQuad alloc] initWithTotalParticles:particleCount];
@@ -173,7 +173,7 @@
 	
     // Set the texture
     [particleSystem setTexture:[[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"particle%@.png", hdSuffix]]];
-
+    
 	// additive
 	[particleSystem setBlendAdditive:YES];
 	
@@ -182,6 +182,40 @@
 	
 	// Add to layer
 	[self addChild:particleSystem z:5];
+}
+
+/**
+ * Create an expanding "flash" effect
+ */
+- (void)flash
+{
+    // Create sprite
+    CCSprite *s = [CCSprite spriteWithFile:[NSString stringWithFormat:@"ring-effect%@.png", hdSuffix]];
+    s.position = ccp(0, 0);
+    [self addChild:s z:2];
+    
+    // Set scale a quarter
+    s.scale = 0.25;
+    
+    // Animate scale to 100, then remove from scene
+    CCScaleTo *scale = [CCScaleTo actionWithDuration:0.5 scale:1.2];
+    CCFadeTo *fade = [CCFadeTo actionWithDuration:0.6 opacity:0];
+    CCCallBlockN *remove = [CCCallBlockN actionWithBlock:^(CCNode *node) {
+        [self removeChild:node cleanup:NO];
+    }];
+    
+    // Run actions
+    [s runAction:[CCSequence actions:[CCSpawn actions:scale, fade, nil], remove, nil]];
+}
+
+/**
+ * Create a "growing" effect
+ */
+- (void)embiggen
+{
+    self.scale = 0;
+    CCScaleTo *scale = [CCScaleTo actionWithDuration:0.6 scale:1.0];
+    [self runAction:scale];
 }
 
 @end

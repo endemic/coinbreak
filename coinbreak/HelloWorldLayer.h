@@ -9,9 +9,11 @@
 
 // When you import this file, you import all the cocos2d classes
 #import "cocos2d.h"
+#import "TitleScene.h"
 #import "Coin.h"
 #import "GameSingleton.h"
 #import "GameConfig.h"
+#import "SimpleAudioEngine.h"
 
 // HelloWorldLayer
 @interface HelloWorldLayer : CCLayer <UIAlertViewDelegate>
@@ -53,13 +55,18 @@
                *quotaLabel, 
                *timeLeftLabel, 
                *currentSumLabel;
+    
+    // Hold info about window/font sizing
+    CGSize window;
+    int fontMultiplier;
+    NSString *hdSuffix;
 }
 
 // returns a CCScene that contains the HelloWorldLayer as the only child
 +(CCScene *) scene;
 
 - (void)gameOver;
-
+- (void)showMessage:(NSString *)text;
 - (void)updateStatusLabels;
 - (void)updateSumLabel;
 - (void)updateTimerLabel;

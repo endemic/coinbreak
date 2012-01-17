@@ -1,0 +1,9 @@
+To do:
+* Experiment with title screen animations
+
+
+Stats:
+* Average turn length
+* Average break length
+* # of coins used
+* win/loss ratio
