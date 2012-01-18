@@ -78,29 +78,35 @@
         currentTurn = 0;
         currentQuota = 0;
         
-        gridOffset = ccp(36, 45);
-        gridSpacing = 15;
+        gridOffset = ccp(36, 110);
+        gridSpacing = [GameSingleton sharedGameSingleton].isPad ? 30 : 15;
+        coinSize = [GameSingleton sharedGameSingleton].isPad ? 125 : 66;
         
         // Add background
         CCSprite *background = [CCSprite spriteWithFile:[NSString stringWithFormat:@"background%@.png", hdSuffix]];
         background.position = ccp(window.width / 2, window.height / 2);
         [self addChild:background];
         
-        // The "break" (center) coin
-        breakCoin = [Coin createWithType:kCoinTypeBreak];
-        breakCoin.position = ccp(window.width / 2, (window.height / 2) - (breakCoin.valueSprite.contentSize.height * 1.05));
-        [self addChild:breakCoin z:0];
+        // Add the outline of the grid
+        CCSprite *outline = [CCSprite spriteWithFile:[NSString stringWithFormat:@"grid-outline%@.png", hdSuffix]];
+        outline.position = ccp(window.width / 2, window.height / 2);
+        [self addChild:outline];
         
-        // Create some temporary labels that show game progress
-        turnsLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Turns: %i/%i", currentTurn, maxTurns] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:48.0 * fontMultiplier];
-        quotaLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Quota: %i/%i", currentQuota, requiredQuota] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:48 * fontMultiplier];
-        timeLeftLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Time Left: %f", timeLeft] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:48 * fontMultiplier];
-        currentSumLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Sum: %i", currentSum] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:48 * fontMultiplier];
+        // Create some labels that show game progress
+        int labelFontSize = 36;
+        turnsLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Turn: %i/%i", currentTurn, maxTurns] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:labelFontSize * fontMultiplier];
+        quotaLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Quota: %i/%i", currentQuota, requiredQuota] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:labelFontSize * fontMultiplier];
+        
+        currentSumLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Sum: %i", currentSum] dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:labelFontSize * fontMultiplier];
+        nextMultipleLabel = [CCLabelTTF labelWithString:@"Next: ~" dimensions:CGSizeMake(160 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:labelFontSize * fontMultiplier];
+        
+        timeLeftLabel = [CCLabelTTF labelWithString:[NSString stringWithFormat:@"Time Left: %f", timeLeft] dimensions:CGSizeMake(200 * fontMultiplier, 90 * fontMultiplier) alignment:CCTextAlignmentLeft fontName:@"BebasNeue.otf" fontSize:labelFontSize * fontMultiplier];
         
         [self addChild:turnsLabel];
         [self addChild:quotaLabel];
-        [self addChild:timeLeftLabel];
         [self addChild:currentSumLabel];
+        [self addChild:nextMultipleLabel];
+        [self addChild:timeLeftLabel];
         
         // Left side
         turnsLabel.position = ccp(turnsLabel.contentSize.width / 2, window.height - turnsLabel.contentSize.height / 2);
@@ -108,7 +114,15 @@
         
         // Right side
         quotaLabel.position = ccp(window.width - quotaLabel.contentSize.width / 2, window.height - quotaLabel.contentSize.height / 2);
-        timeLeftLabel.position = ccp(window.width - timeLeftLabel.contentSize.width / 2, window.height - timeLeftLabel.contentSize.height);
+        nextMultipleLabel.position = ccp(window.width - nextMultipleLabel.contentSize.width / 2, window.height - nextMultipleLabel.contentSize.height);
+        
+        // Bottom
+        timeLeftLabel.position = ccp(window.width / 2, timeLeftLabel.contentSize.height);
+        
+        // The "break" (center) coin
+        breakCoin = [Coin createWithType:kCoinTypeBreak];
+        breakCoin.position = ccp(window.width / 2, window.height / 2);
+        [self addChild:breakCoin z:0];
         
         // Arrays to hold "coin" objects
         grid = [[NSMutableArray arrayWithCapacity:16] retain];
@@ -118,12 +132,12 @@
         int gridSize = 4;
         
         /*
-         Iterating thru the grid 0 - 15 looks like this
+         grid currently looks like this
          
-         3 7 11 15
-         2 6 10 14
-         1 5  9 13
-         0 4  8 12
+         13 14 15 16
+          9 10 11 12
+          5  6  7  8
+          1  2  3  4
          
          I would rather it go all the way around the outside, or from top to bottom
          */
@@ -135,44 +149,31 @@
             {
                 int index = j + i * gridSize;
                 
-                switch (index) 
+                Coin *c;
+                
+                // Inner coins
+                if (index == 5 || index == 6 || index == 9 || index == 10)
                 {
-                    // Center coins
-                    case 5:
-                    case 6:
-                    case 9:
-                    case 10:
-                    {
-                        // Create & position coin
-                        Coin *c = [Coin createWithType:kCoinTypeInner];
-                        int size = c.backgroundSprite.contentSize.width + gridSpacing;
-                        
-                        c.position = ccp(j * size + gridOffset.x, i * size + gridOffset.y);
-                        
-                        // Add to layer
-                        [self addChild:c z:1];
-                        
-                        // Add to organizational array
-                        [grid insertObject:c atIndex:index];
-                    }
-                        break;
-                    // All the rest
-                    default:
-                    {
-                        // Create & position coin
-                        Coin *c = [Coin createWithType:kCoinTypeOuter];
-                        int size = c.backgroundSprite.contentSize.width + gridSpacing;
-                        
-                        c.position = ccp(j * size + gridOffset.x, i * size + gridOffset.y);
-                        
-                        // Add to layer
-                        [self addChild:c z:1];
-                        
-                        // Add to organizational array
-                        [grid insertObject:c atIndex:index];
-                    }
-                        break;
+                    c = [Coin createWithType:kCoinTypeInner];
                 }
+                else 
+                {
+                    c = [Coin createWithType:kCoinTypeOuter];
+                }
+                
+                // Position
+                c.position = ccp(j * (coinSize + gridSpacing) + gridOffset.x, i * (coinSize + gridSpacing) + gridOffset.y);
+                
+                // Add to layer
+                [self addChild:c z:2];
+                
+                // Add to organizational array
+                [grid insertObject:c atIndex:index];
+                
+                // Also add sprites that denote empty spaces
+                CCSprite *empty = [CCSprite spriteWithFile:[NSString stringWithFormat:@"empty-spot%@.png", hdSuffix]];
+                empty.position = ccp(j * (coinSize + gridSpacing) + gridOffset.x, i * (coinSize + gridSpacing) + gridOffset.y);
+                [self addChild:empty z:1];
             }
         }
         
@@ -429,9 +430,8 @@
                             // Set position
                             int x = j / 4;
                             int y = j % 4;
-                            int size = replacement.valueSprite.contentSize.width + gridSpacing;
-                            
-                            replacement.position = ccp(x * size + gridOffset.x, y * size + gridOffset.y);
+
+                            replacement.position = ccp(y * (coinSize + gridSpacing) + gridOffset.x, x * (coinSize + gridSpacing) + gridOffset.y);
                             
                             // Add to layer
                             [self addChild:replacement z:1];

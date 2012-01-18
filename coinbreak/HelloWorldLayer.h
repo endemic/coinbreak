@@ -18,16 +18,18 @@
 // HelloWorldLayer
 @interface HelloWorldLayer : CCLayer <UIAlertViewDelegate>
 {
-    // Variables
-    int difficulty;
-    
+    // Multipliers
     int lastCoinCount;
     int lastMultipleCount;
     
     int coinCounter;
     int multipleCounter;
     
+    // Status
     int currentSum;
+    int nextMultiple;
+    
+    int difficulty;
     float timeLeft;
     
     // Current/max turns
@@ -47,14 +49,15 @@
     // Manipulates the position of the playing grid
     CGPoint gridOffset;
     
-    // Amount of extra space between coins
-    int gridSpacing;
+    // Used to set up the game grid
+    int coinSize, gridSpacing;
     
     // Labels
     CCLabelTTF *turnsLabel, 
                *quotaLabel, 
                *timeLeftLabel, 
-               *currentSumLabel;
+               *currentSumLabel,
+               *nextMultipleLabel;
     
     // Hold info about window/font sizing
     CGSize window;
