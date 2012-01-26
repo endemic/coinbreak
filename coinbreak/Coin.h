@@ -39,8 +39,8 @@
 - (void)stop;
 
 - (void)flash;
-- (void)explode;
 - (void)embiggen;
+- (void)shrink;
 
 @property (nonatomic, retain) CCSprite *backgroundSprite;
 @property (nonatomic, retain) CCSprite *valueSprite;
@@ -48,5 +48,7 @@
 @property (nonatomic) int type;
 @property (nonatomic) int width;
 @property (nonatomic) int height;
+@property (nonatomic, retain) NSString *hdSuffix;
+@property (nonatomic) int fontMultiplier;
 
 @end

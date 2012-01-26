@@ -69,9 +69,10 @@
 +(CCScene *) scene;
 
 - (void)gameOver;
-- (void)showMessage:(NSString *)text;
+- (void)showMessage:(NSMutableArray *)messages;
 - (void)updateStatusLabels;
 - (void)updateSumLabel;
 - (void)updateTimerLabel;
+- (void)explosionAt:(CGPoint)position;
 
 @end

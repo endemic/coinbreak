@@ -164,6 +164,8 @@
 		7D367F1414C0E6DC00650B84 /* ring-effect.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F0F14C0E6DC00650B84 /* ring-effect.png */; };
 		7D367F1514C0E6DC00650B84 /* logo-hd.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F1014C0E6DC00650B84 /* logo-hd.png */; };
 		7D367F1614C0E6DC00650B84 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D367F1114C0E6DC00650B84 /* logo.png */; };
+		7D9DED8D14D1716100CC32C7 /* message-background-hd.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D9DED8C14D1716100CC32C7 /* message-background-hd.png */; };
+		7D9DED9014D174B800CC32C7 /* message-background.png in Resources */ = {isa = PBXBuildFile; fileRef = 7D9DED8F14D174B800CC32C7 /* message-background.png */; };
 		7DA354BA14C5872A00A5F1C3 /* beep.caf in Resources */ = {isa = PBXBuildFile; fileRef = 7DA354B714C5872A00A5F1C3 /* beep.caf */; };
 		7DA354BB14C5872A00A5F1C3 /* coin.caf in Resources */ = {isa = PBXBuildFile; fileRef = 7DA354B814C5872A00A5F1C3 /* coin.caf */; };
 		7DA354BC14C5872A00A5F1C3 /* tick.caf in Resources */ = {isa = PBXBuildFile; fileRef = 7DA354B914C5872A00A5F1C3 /* tick.caf */; };
@@ -457,6 +459,8 @@
 		7D367F0F14C0E6DC00650B84 /* ring-effect.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ring-effect.png"; sourceTree = "<group>"; };
 		7D367F1014C0E6DC00650B84 /* logo-hd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-hd.png"; sourceTree = "<group>"; };
 		7D367F1114C0E6DC00650B84 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
+		7D9DED8C14D1716100CC32C7 /* message-background-hd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "message-background-hd.png"; sourceTree = "<group>"; };
+		7D9DED8F14D174B800CC32C7 /* message-background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "message-background.png"; sourceTree = "<group>"; };
 		7DA354B714C5872A00A5F1C3 /* beep.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = beep.caf; sourceTree = "<group>"; };
 		7DA354B814C5872A00A5F1C3 /* coin.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = coin.caf; sourceTree = "<group>"; };
 		7DA354B914C5872A00A5F1C3 /* tick.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = tick.caf; sourceTree = "<group>"; };
@@ -884,6 +888,8 @@
 		7D341DBC14BB38F000197403 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				7D9DED8F14D174B800CC32C7 /* message-background.png */,
+				7D9DED8C14D1716100CC32C7 /* message-background-hd.png */,
 				7DEDAC1214C6E53200ED6E13 /* empty-spot-hd.png */,
 				7DEDAC1314C6E53200ED6E13 /* empty-spot.png */,
 				7DEDAC1414C6E53200ED6E13 /* grid-outline-hd.png */,
@@ -1050,6 +1056,8 @@
 				7DEDAC1714C6E53200ED6E13 /* empty-spot.png in Resources */,
 				7DEDAC1814C6E53200ED6E13 /* grid-outline-hd.png in Resources */,
 				7DEDAC1914C6E53200ED6E13 /* grid-outline.png in Resources */,
+				7D9DED8D14D1716100CC32C7 /* message-background-hd.png in Resources */,
+				7D9DED9014D174B800CC32C7 /* message-background.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

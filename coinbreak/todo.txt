@@ -1,6 +1,13 @@
 To do:
 * Experiment with title screen animations
-
+* Fix coin graphics to have equal spacing
+* Find some better sound effects
+* Game notification idea
+    1. Fade in a horizontal bar across the screen
+    2. Slide notification in from the left, pause at center, slide out
+    3. Fade horizontal bar out
+    4. Notification method can take an array of strings, so when one message has finished animating, others will display
+    4. Also let notification method take a callback, so certain actions can be executed when messages are finished being displayed
 
 Stats:
 * Average turn length

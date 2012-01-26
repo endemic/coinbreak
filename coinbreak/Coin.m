@@ -10,7 +10,7 @@
 
 @implementation Coin
 
-@synthesize type, currentValue, valueSprite, backgroundSprite, width, height;
+@synthesize type, currentValue, valueSprite, backgroundSprite, width, height, fontMultiplier, hdSuffix;
 
 /**
  * Init method; not sure if this will do anything or not
@@ -30,7 +30,6 @@
 			hdSuffix = @"";
 			fontMultiplier = 1;
 		}
-    
     }
     return self;
 }
@@ -50,8 +49,8 @@
     c.type = type;
     
     // Set the value and background sprites
-    c.valueSprite = [CCSprite spriteWithFile:[NSString stringWithFormat:@"%i-value.png", c.currentValue]];
-    c.backgroundSprite = [CCSprite spriteWithFile:[NSString stringWithFormat:@"%i-type.png", c.type]];
+    c.valueSprite = [CCSprite spriteWithFile:[NSString stringWithFormat:@"%i-value%@.png", c.currentValue, c.hdSuffix]];
+    c.backgroundSprite = [CCSprite spriteWithFile:[NSString stringWithFormat:@"%i-type%@.png", c.type, c.hdSuffix]];
     
     // Set width/height convenience properties
     c.width = c.valueSprite.contentSize.width;
@@ -76,7 +75,7 @@
     [self flash];
     
     // Change the displayed number sprite
-    valueSprite.texture = [[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"%i-value.png", currentValue]];
+    valueSprite.texture = [[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"%i-value%@.png", currentValue, hdSuffix]];
 }
 
 /**
@@ -91,7 +90,7 @@
     [self flash];
     
     // Change the displayed number sprite
-    valueSprite.texture = [[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"%i-value.png", currentValue]];    
+    valueSprite.texture = [[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"%i-value%@.png", currentValue, hdSuffix]];
 }
 
 /**
@@ -116,82 +115,13 @@
 }
 
 /**
- * Create a particle effect on the coin
- */
-- (void)explode
-{
-    CGPoint position = ccp(0, 0);
-	int particleCount = 100;
-	
-	// Create quad particle system (faster on 3rd gen & higher devices, only slightly slower on 1st/2nd gen)
-	CCParticleSystemQuad *particleSystem = [[CCParticleSystemQuad alloc] initWithTotalParticles:particleCount];
-	
-	[particleSystem setEmitterMode:kCCParticleModeGravity];
-    [particleSystem setDuration:0.2];
-	
-	// Gravity Mode: gravity
-	[particleSystem setGravity:ccp(0, 0)];
-	
-	// Gravity Mode: speed of particles
-	[particleSystem setSpeed:140];
-	[particleSystem setSpeedVar:40];
-	
-	// Gravity Mode: radial
-	[particleSystem setRadialAccel:0];
-	[particleSystem setRadialAccelVar:0];
-	
-	// Gravity Mode: tagential
-	[particleSystem setTangentialAccel:0];
-	[particleSystem setTangentialAccelVar:0];
-	
-	// angle
-	[particleSystem setAngle:90];
-	[particleSystem setAngleVar:360];
-	
-	// emitter position
-	[particleSystem setPosition:position];
-	[particleSystem setPosVar:CGPointZero];
-	
-	// life is for particles particles - in seconds
-	[particleSystem setLife:0];
-	[particleSystem setLifeVar:0.4];
-	
-	// size, in pixels
-	[particleSystem setStartSize:10.0 * fontMultiplier];
-	[particleSystem setStartSizeVar:5.0 * fontMultiplier];
-	[particleSystem setEndSize:20.0 * fontMultiplier];
-    [particleSystem setEndSizeVar:5.0 * fontMultiplier];
-	
-	// emits per second
-	[particleSystem setEmissionRate:[particleSystem totalParticles] / [particleSystem duration]];
-	
-	// color of particles
-	ccColor4F startColor = {1.0f, 1.0f, 1.0f, 0.25f};
-	ccColor4F endColor = {1.0f, 1.0f, 1.0f, 0.75f};
-	[particleSystem setStartColor:startColor];
-	[particleSystem setEndColor:endColor];
-	
-    // Set the texture
-    [particleSystem setTexture:[[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"particle%@.png", hdSuffix]]];
-    
-	// additive
-	[particleSystem setBlendAdditive:YES];
-	
-	// Auto-remove the emitter when it is done!
-	[particleSystem setAutoRemoveOnFinish:YES];
-	
-	// Add to layer
-	[self addChild:particleSystem z:5];
-}
-
-/**
  * Create an expanding "flash" effect
  */
 - (void)flash
 {
     // Create sprite
     CCSprite *s = [CCSprite spriteWithFile:[NSString stringWithFormat:@"ring-effect%@.png", hdSuffix]];
-    s.position = ccp(0, 0);
+    s.position = ccp(-4 * fontMultiplier, 4 * fontMultiplier);    // Slightly offset due to the fact that coin backgrounds have a shadow
     [self addChild:s z:2];
     
     // Set scale a quarter
@@ -215,7 +145,15 @@
 {
     self.scale = 0;
     CCScaleTo *scale = [CCScaleTo actionWithDuration:0.6 scale:1.0];
-    [self runAction:scale];
+    CCEaseBackOut *ease = [CCEaseBackOut actionWithAction:scale];
+    [self runAction:ease];
+}
+
+- (void)shrink
+{
+    CCScaleTo *scale = [CCScaleTo actionWithDuration:0.5 scale:0];
+    CCEaseBackIn *ease = [CCEaseBackIn actionWithAction:scale];
+    [self runAction:ease];
 }
 
 @end

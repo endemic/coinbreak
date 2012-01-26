@@ -35,8 +35,18 @@
     {
         // Store window size
         window = [CCDirector sharedDirector].winSize;
-        fontMultiplier = 1;
-        hdSuffix = @"";
+
+        // Set "fontMultiplier" and "hdSuffix" vars
+        if ([GameSingleton sharedGameSingleton].isPad)
+		{
+			hdSuffix = @"-hd";
+			fontMultiplier = 2;
+		}
+		else
+		{
+			hdSuffix = @"";
+			fontMultiplier = 1;
+		}
         
         // Set variables based on set difficulty
         switch ([GameSingleton sharedGameSingleton].difficulty) 
@@ -78,7 +88,7 @@
         currentTurn = 0;
         currentQuota = 0;
         
-        gridOffset = ccp(36, 110);
+        gridOffset = ccp(40, 115);
         gridSpacing = [GameSingleton sharedGameSingleton].isPad ? 30 : 15;
         coinSize = [GameSingleton sharedGameSingleton].isPad ? 125 : 66;
         
@@ -117,7 +127,7 @@
         nextMultipleLabel.position = ccp(window.width - nextMultipleLabel.contentSize.width / 2, window.height - nextMultipleLabel.contentSize.height);
         
         // Bottom
-        timeLeftLabel.position = ccp(window.width / 2, timeLeftLabel.contentSize.height);
+        timeLeftLabel.position = ccp(window.width / 2, timeLeftLabel.contentSize.height / 3);
         
         // The "break" (center) coin
         breakCoin = [Coin createWithType:kCoinTypeBreak];
@@ -170,7 +180,7 @@
                 // Add to organizational array
                 [grid insertObject:c atIndex:index];
                 
-                // Also add sprites that denote empty spaces
+                // Also add sprites that denote empty spaces - these don't have to be referenced later
                 CCSprite *empty = [CCSprite spriteWithFile:[NSString stringWithFormat:@"empty-spot%@.png", hdSuffix]];
                 empty.position = ccp(j * (coinSize + gridSpacing) + gridOffset.x, i * (coinSize + gridSpacing) + gridOffset.y);
                 [self addChild:empty z:1];
@@ -277,20 +287,23 @@
             // Remainder of 0 means the sum is a clean multiple
             if (currentSum % breakCoin.currentValue == 0)
             {
+                // Disable additional player input until the status messages disappear
+                [self setIsTouchEnabled:NO];
+                
                 // Play sfx
                 [[SimpleAudioEngine sharedEngine] playEffect:@"coin.caf"];
-                
-                // Display status message
-                [self showMessage:@"Break!"];
                 
                 // Determine if any bonus multipliers are in effect
                 int coinCount = [selectedNumbers count];
                 int multipleCount = currentSum / breakCoin.currentValue;
-                                
+                
+                // Create array of strings to show user
+                NSMutableArray *messages = [NSMutableArray arrayWithObject:@"Break!"]; 
+                
                 if (coinCount == lastCoinCount) 
                 {
                     coinCounter++;
-                    // TODO: Show some sort of status message
+                    [messages addObject:[NSString stringWithFormat:@"Count Bonus x%i!", coinCount]];
                 }
                 else
                 {
@@ -300,12 +313,15 @@
                 if (multipleCount == lastMultipleCount)
                 {
                     multipleCounter++;
-                    // TODO: Show some sort of status message
+                    [messages addObject:[NSString stringWithFormat:@"Multiple Bonus x%i!", multipleCounter]];
                 }
                 else
                 {
                     multipleCounter = 0;
                 }
+                
+                // Display status messages
+                [self showMessage:messages];
                 
                 // Store previous values for next turn
                 lastCoinCount = coinCount;
@@ -316,6 +332,7 @@
                 
                 // Reset the current sum
                 currentSum = 0;
+                nextMultiple = 0;
                 
                 // Increment the current turn
                 currentTurn++;
@@ -353,7 +370,7 @@
                             currentQuota += 1 + coinCounter + multipleCounter;
                             
                             // Special effect?
-                            //[selected flash];
+                            [self explosionAt:selected.position];
                             
                             // Remove the coin from the layer
                             [self removeChild:selected cleanup:YES];
@@ -363,6 +380,9 @@
                             break;
                     }
                 }
+                
+                // Remove all coins in the "selected" array
+                [selectedNumbers removeAllObjects];
                 
                 // Increment values of existing coins
                 for (int j = 0; j < [grid count]; j++)
@@ -377,19 +397,22 @@
                             // Remove coins that have a value of 9
                             if (gridCoin.currentValue == 9)
                             {
-                                // Special effect?
-                                //[gridCoin flash];
-                                
-                                // Remove the coin from the layer
-                                [self removeChild:gridCoin cleanup:YES];
-                                
+                                // Shrink coin out then remove from layer
+                                CCScaleTo *scale = [CCScaleTo actionWithDuration:0.5 scale:0];
+                                CCEaseBackIn *ease = [CCEaseBackIn actionWithAction:scale];
+                                CCCallBlockN *remove = [CCCallBlockN actionWithBlock:^(CCNode *node) {
+                                    // Remove the coin from the layer
+                                    [self removeChild:(Coin *)node cleanup:YES];
+                                }];
+                                [gridCoin runAction:[CCSequence actions:ease, remove, nil]];
+
                                 // Replace the coin in the grid with NSNull
                                 [grid replaceObjectAtIndex:[grid indexOfObjectIdenticalTo:gridCoin] withObject:[NSNull null]];
                             }
                             else
                             {
                                 // Effect a slight delay between increment effects
-                                CCDelayTime *wait = [CCDelayTime actionWithDuration:(float)(j / 10.0)];
+                                CCDelayTime *wait = [CCDelayTime actionWithDuration:(float)j / (float)[grid count]];     // Max time: 1 second
                                 CCCallBlockN *increment = [CCCallBlockN actionWithBlock:^(CCNode *node) {
                                     // Increment all other coins
                                     [(Coin *)node incrementValue];
@@ -402,55 +425,45 @@
                     }
                 }
                 
-                /*
-                 Iterating thru the grid 0 - 15 looks like this
-                 
-                 3 7 11 15
-                 2 6 10 14
-                 1 5  9 13
-                 0 4  8 12
-                 
-                 I would rather it go all the way around the outside, or from top to bottom
-                 */
-                
-                
-                // Randomly re-insert coins into any empty grid spaces
-                for (int j = 0; j < [grid count]; j++)
-                {
-                    if ([grid objectAtIndex:j] == [NSNull null])
+                CCCallBlock *randomlyAddNewCoins = [CCCallBlock actionWithBlock:^{
+                    // Randomly re-insert coins into any empty grid spaces
+                    for (int j = 0; j < [grid count]; j++)
                     {
-                        // Randomly decide to insert or not
-                        if (CCRANDOM_MINUS1_1() > 0)    // returns -1 ~ 1
+                        if ([grid objectAtIndex:j] == [NSNull null])
                         {
-                            Coin *replacement = [Coin createWithType:kCoinTypeOuter];
-                            
-                            // Replace in grid
-                            [grid replaceObjectAtIndex:j withObject:replacement];
-                            
-                            // Set position
-                            int x = j / 4;
-                            int y = j % 4;
-
-                            replacement.position = ccp(y * (coinSize + gridSpacing) + gridOffset.x, x * (coinSize + gridSpacing) + gridOffset.y);
-                            
-                            // Add to layer
-                            [self addChild:replacement z:1];
-                            
-                            // "Grow" the coin into place
-                            [replacement embiggen];
+                            // Randomly decide to insert or not
+                            if (CCRANDOM_MINUS1_1() > 0)    // returns -1 ~ 1
+                            {
+                                Coin *replacement = [Coin createWithType:kCoinTypeOuter];
+                                
+                                // Replace in grid
+                                [grid replaceObjectAtIndex:j withObject:replacement];
+                                
+                                // Set position
+                                int x = j / 4;
+                                int y = j % 4;
+                                
+                                replacement.position = ccp(y * (coinSize + gridSpacing) + gridOffset.x, x * (coinSize + gridSpacing) + gridOffset.y);
+                                
+                                // Add to layer
+                                [self addChild:replacement z:1];
+                                
+                                // "Grow" the coin into place
+                                [replacement embiggen];
+                            }
                         }
                     }
-                }
+                }];
+                
+                // Randomly add new coins after a delay to wait for the "incrment" effect to occur
+                [self runAction:[CCSequence actions:[CCDelayTime actionWithDuration:2.0], randomlyAddNewCoins, nil]];
                 
                 // Update the labels that display status to the player
                 [self updateStatusLabels];
                 [self updateSumLabel];
                 
-                // Remove all coins in the "selected" array
-                [selectedNumbers removeAllObjects];
-                
                 // If the current turn == max turn, game over!
-                if (currentTurn == maxTurns)
+                if (currentTurn == maxTurns || currentQuota >= requiredQuota)
                 {
                     [self gameOver];
                 }
@@ -521,28 +534,56 @@
 /**
  * Pops up a label w/ some text
  */
-- (void)showMessage:(NSString *)text
+- (void)showMessage:(NSMutableArray *)messages
 {
-    // Create/add label
-    CCLabelTTF *label = [CCLabelTTF labelWithString:text fontName:@"BebasNeue.otf" fontSize:44 * fontMultiplier];
-    label.position = ccp(window.width / 2, window.height / 2 - label.contentSize.height);
-    [self addChild:label z:3];
-
-    // Move/fade the "Break!" text into place, and enable layer touch when finished
-    id move = [CCMoveTo actionWithDuration:0.4 position:ccp(window.width / 2, window.height / 2 - label.contentSize.height)];
-    id ease = [CCEaseBackOut actionWithAction:move];
-    id fadeIn = [CCFadeIn actionWithDuration:0.3];
+    // Fade in background
+    CCSprite *bg = [CCSprite spriteWithFile:[NSString stringWithFormat:@"message-background%@.png", hdSuffix]];
+    bg.position = ccp(window.width / 2, window.height / 2);
+    bg.opacity = 0;
+    [self addChild:bg z:3];
+    
+    [bg runAction:[CCFadeIn actionWithDuration:0.5]];
+    
+    // Slide the label into place, and enable layer touch when finished
+    id moveIn = [CCMoveTo actionWithDuration:0.4 position:ccp(window.width / 2, window.height / 2)];
+    id easeIn = [CCEaseBackOut actionWithAction:moveIn];
+    id moveOut = [CCMoveTo actionWithDuration:0.4 position:ccp(window.width * 1.5, window.height / 2)];
+    id easeOut = [CCEaseBackIn actionWithAction:moveOut];
+    
     id wait = [CCDelayTime actionWithDuration:0.8];
-    id fadeOut = [CCFadeOut actionWithDuration:0.2];
+
     id remove = [CCCallBlockN actionWithBlock:^(CCNode *node) {
         [node.parent removeChild:node cleanup:YES];
     }];
+    
     id enableTouch = [CCCallBlock actionWithBlock:^{
-        //[self setIsTouchEnabled:YES];
+        [self setIsTouchEnabled:YES];
     }];
     
-    // Run fade in/fade out animation on text
-    [label runAction:[CCSequence actions:[CCSpawn actions:ease, fadeIn, nil], wait, fadeOut, remove, enableTouch, nil]];
+    // Make the background fade out and remove itself after all messages are shown - 1.6 seconds is total animation time for text
+    id fadeOut = [CCFadeOut actionWithDuration:0.3];
+    id bgWait = [CCDelayTime actionWithDuration:[messages count] * 1.6];
+    [bg runAction:[CCSequence actions:bgWait, fadeOut, remove, nil]];
+    
+    for (int i = 0; i < [messages count]; i++)
+    {
+        // Create/add labels
+        CCLabelTTF *label = [CCLabelTTF labelWithString:[messages objectAtIndex:i] fontName:@"BebasNeue.otf" fontSize:44 * fontMultiplier];
+        label.position = ccp(-label.contentSize.width / 2, window.height / 2);
+        [self addChild:label z:4];
+        
+        // Run fade in/fade out animation on text
+        if (i < [messages count] - 1)
+        {
+            // More messages to come
+            [label runAction:[CCSequence actions:[CCDelayTime actionWithDuration:i * 1.6], easeIn, wait, easeOut, remove, nil]];
+        }
+        else
+        {
+            // Enable touches again on the last message
+            [label runAction:[CCSequence actions:[CCDelayTime actionWithDuration:i * 1.6], easeIn, wait, easeOut, remove, enableTouch, nil]];
+        }
+    }
 }
 
 /**
@@ -561,7 +602,67 @@
 
 - (void)updateTimerLabel
 {
-    timeLeftLabel.string = [NSString stringWithFormat:@"Time Left: %f2", timeLeft];
+    timeLeftLabel.string = [NSString stringWithFormat:@"Time Left: %.1f", timeLeft];
+}
+
+- (void)explosionAt:(CGPoint)position
+{
+	int particleCount = 200;
+	
+	// Create quad particle system (faster on 3rd gen & higher devices, only slightly slower on 1st/2nd gen)
+	CCParticleSystemQuad *particleSystem = [[CCParticleSystemQuad alloc] initWithTotalParticles:particleCount];
+	
+	[particleSystem setEmitterMode:kCCParticleModeGravity];
+    [particleSystem setDuration:0.1];
+	
+	// Gravity Mode: gravity
+	[particleSystem setGravity:ccp(0, -200)];
+	
+	// Gravity Mode: speed of particles
+	[particleSystem setSpeed:100];
+	[particleSystem setSpeedVar:30];
+	
+	// angle
+	[particleSystem setAngle:90];
+	[particleSystem setAngleVar:270];
+	
+	// emitter position
+	[particleSystem setPosition:position];
+	[particleSystem setPosVar:CGPointZero];
+	
+	// life is for particles particles - in seconds
+	[particleSystem setLife:0.2];
+	[particleSystem setLifeVar:0.6];
+	
+	// size, in pixels
+	[particleSystem setStartSize:20.0 * fontMultiplier];
+	[particleSystem setStartSizeVar:2.0 * fontMultiplier];
+	[particleSystem setEndSize:0];
+	
+	// emits per second
+	[particleSystem setEmissionRate:[particleSystem totalParticles] / [particleSystem duration]];
+	
+	// color of particles
+	ccColor4F startColor = {1.0f, 1.0f, 1.0f, 1.0f};
+    ccColor4F startColorVar = {0.0f, 0.0f, 0.0f, 1.0f};
+	ccColor4F endColor = {1.0f, 1.0f, 1.0f, 1.0f};
+	[particleSystem setStartColor:startColor];
+    [particleSystem setStartColorVar:startColorVar];
+	[particleSystem setEndColor:endColor];
+	
+    // Set the texture
+    [particleSystem setTexture:[[CCTextureCache sharedTextureCache] addImage:[NSString stringWithFormat:@"particle%@.png", hdSuffix]]];
+    
+	// additive
+	[particleSystem setBlendAdditive:YES];
+	
+	// Auto-remove the emitter when it is done!
+	[particleSystem setAutoRemoveOnFinish:YES];
+	
+    //CCLOG(@"Adding particle system at %f, %f", position.x, position.y);
+    
+	// Add to layer
+	[self addChild:particleSystem z:5];
 }
 
 // on "dealloc" you need to release all your retained objects
