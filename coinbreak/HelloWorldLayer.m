@@ -85,6 +85,8 @@
         multipleCounter = 0;
         
         currentSum = 0;
+        nextMultiple = 0;
+        
         currentTurn = 0;
         currentQuota = 0;
         
@@ -279,6 +281,12 @@
             // Increment the total sum
             currentSum += c.currentValue;
             
+            // Lazily figure out the next target multiple
+            while (nextMultiple < currentSum)
+            {
+                nextMultiple += breakCoin.currentValue;
+            }
+            
             [self updateSumLabel];
             
             // If sum is multiple of break coin, a "break" occurs and we remove the selected outer coins, 
@@ -291,7 +299,7 @@
                 [self setIsTouchEnabled:NO];
                 
                 // Play sfx
-                [[SimpleAudioEngine sharedEngine] playEffect:@"coin.caf"];
+                [[SimpleAudioEngine sharedEngine] playEffect:@"chime.caf"];
                 
                 // Determine if any bonus multipliers are in effect
                 int coinCount = [selectedNumbers count];
@@ -303,7 +311,12 @@
                 if (coinCount == lastCoinCount) 
                 {
                     coinCounter++;
-                    [messages addObject:[NSString stringWithFormat:@"Count Bonus x%i!", coinCount]];
+                    
+                    // Only apply the bonus if obtained on two or more turns
+                    if (coinCounter > 1)
+                    {
+                        [messages addObject:[NSString stringWithFormat:@"Count Bonus x%i!", coinCount]];
+                    }
                 }
                 else
                 {
@@ -313,7 +326,12 @@
                 if (multipleCount == lastMultipleCount)
                 {
                     multipleCounter++;
-                    [messages addObject:[NSString stringWithFormat:@"Multiple Bonus x%i!", multipleCounter]];
+                    
+                    // Only apply the bonus if obtained on two or more turns
+                    if (multipleCounter > 1)
+                    {
+                        [messages addObject:[NSString stringWithFormat:@"Multiple Bonus x%i!", multipleCounter]];
+                    }
                 }
                 else
                 {
@@ -355,7 +373,10 @@
                         break;
                 }
                 
-                // Cycle through the selectedNumbers array, removing any "outer" coins
+                // How many points the player scored this turn
+                int turnQuota = 0;
+                
+                // Cycle through the selectedNumbers array, removing any "outer" coins and incrementing score
                 for (int j = 0; j < [selectedNumbers count]; j++)
                 {
                     Coin *selected = [selectedNumbers objectAtIndex:j];
@@ -367,8 +388,8 @@
                             break;
                         case kCoinTypeOuter:
                             // Increase score
-                            currentQuota += 1 + coinCounter + multipleCounter;
-                            
+                            turnQuota++;
+
                             // Special effect?
                             [self explosionAt:selected.position];
                             
@@ -379,6 +400,21 @@
                             [grid replaceObjectAtIndex:[grid indexOfObjectIdenticalTo:selected] withObject:[NSNull null]];
                             break;
                     }
+                }
+                
+                // Handle scoring
+                currentQuota += turnQuota;
+                
+                // If the same # of coins were used for a break as the previous turn...
+                if (coinCounter > 1)
+                {
+                    currentQuota += turnQuota * coinCounter;
+                }
+                
+                // If the same multiple of the core number was used for a break as the previous turn...
+                if (multipleCounter > 1)
+                {
+                    currentQuota += turnQuota * multipleCounter;
                 }
                 
                 // Remove all coins in the "selected" array
@@ -536,20 +572,17 @@
  */
 - (void)showMessage:(NSMutableArray *)messages
 {
-    // Fade in background
+    // Create message background sprite
     CCSprite *bg = [CCSprite spriteWithFile:[NSString stringWithFormat:@"message-background%@.png", hdSuffix]];
     bg.position = ccp(window.width / 2, window.height / 2);
     bg.opacity = 0;
     [self addChild:bg z:3];
     
-    [bg runAction:[CCFadeIn actionWithDuration:0.5]];
-    
-    // Slide the label into place, and enable layer touch when finished
+    // Actions!
     id moveIn = [CCMoveTo actionWithDuration:0.4 position:ccp(window.width / 2, window.height / 2)];
     id easeIn = [CCEaseBackOut actionWithAction:moveIn];
     id moveOut = [CCMoveTo actionWithDuration:0.4 position:ccp(window.width * 1.5, window.height / 2)];
     id easeOut = [CCEaseBackIn actionWithAction:moveOut];
-    
     id wait = [CCDelayTime actionWithDuration:0.8];
 
     id remove = [CCCallBlockN actionWithBlock:^(CCNode *node) {
@@ -560,10 +593,14 @@
         [self setIsTouchEnabled:YES];
     }];
     
-    // Make the background fade out and remove itself after all messages are shown - 1.6 seconds is total animation time for text
-    id fadeOut = [CCFadeOut actionWithDuration:0.3];
-    id bgWait = [CCDelayTime actionWithDuration:[messages count] * 1.6];
-    [bg runAction:[CCSequence actions:bgWait, fadeOut, remove, nil]];
+    id playSfx = [CCCallBlock actionWithBlock:^{
+        [[SimpleAudioEngine sharedEngine] playEffect:@"swoosh.caf"];
+    }];
+    
+    // Fade in background, then fade out after all msg are shown - 1.6 seconds is total animation time for each string
+    [bg runAction:[CCSequence actions:[CCFadeIn actionWithDuration:0.3], 
+                   [CCDelayTime actionWithDuration:[messages count] * 1.4],
+                   [CCFadeOut actionWithDuration:0.3], nil]];
     
     for (int i = 0; i < [messages count]; i++)
     {
@@ -576,12 +613,23 @@
         if (i < [messages count] - 1)
         {
             // More messages to come
-            [label runAction:[CCSequence actions:[CCDelayTime actionWithDuration:i * 1.6], easeIn, wait, easeOut, remove, nil]];
+            [label runAction:[CCSequence actions:
+                              [CCDelayTime actionWithDuration:i * 1.6], 
+                              [CCSpawn actions:easeIn, playSfx, nil], 
+                              wait, 
+                              easeOut, 
+                              remove, nil]];
         }
         else
         {
             // Enable touches again on the last message
-            [label runAction:[CCSequence actions:[CCDelayTime actionWithDuration:i * 1.6], easeIn, wait, easeOut, remove, enableTouch, nil]];
+            [label runAction:[CCSequence actions:
+                              [CCDelayTime actionWithDuration:i * 1.6], 
+                              [CCSpawn actions:easeIn, playSfx, nil], 
+                              wait, 
+                              easeOut, 
+                              remove, 
+                              enableTouch, nil]];
         }
     }
 }
@@ -598,6 +646,15 @@
 - (void)updateSumLabel
 {
     currentSumLabel.string = [NSString stringWithFormat:@"Sum: %i", currentSum];
+    
+    if (nextMultiple != 0)
+    {
+        nextMultipleLabel.string = [NSString stringWithFormat:@"Next: %i", nextMultiple];
+    }
+    else
+    {
+        nextMultipleLabel.string = [NSString stringWithFormat:@"Next: ~", nextMultiple];
+    }
 }
 
 - (void)updateTimerLabel

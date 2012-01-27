@@ -2,6 +2,7 @@ To do:
 * Experiment with title screen animations
 * Fix coin graphics to have equal spacing
 * Find some better sound effects
+
 * Game notification idea
     1. Fade in a horizontal bar across the screen
     2. Slide notification in from the left, pause at center, slide out
@@ -14,3 +15,8 @@ Stats:
 * Average break length
 * # of coins used
 * win/loss ratio
+
+Ideas
+* Add achievements?
+* Add an "exp" meter? w/ corresponding achievements for gained levels? If that's the case, hardest difficulty should give lots of exp.
+* Add a "score" component as well? Time taken/round + quota gained
