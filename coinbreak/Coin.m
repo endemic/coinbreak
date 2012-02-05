@@ -121,7 +121,7 @@
 {
     // Create sprite
     CCSprite *s = [CCSprite spriteWithFile:[NSString stringWithFormat:@"ring-effect%@.png", hdSuffix]];
-    s.position = ccp(-4 * fontMultiplier, 4 * fontMultiplier);    // Slightly offset due to the fact that coin backgrounds have a shadow
+    s.position = ccp(0, 0);
     [self addChild:s z:2];
     
     // Set scale a quarter

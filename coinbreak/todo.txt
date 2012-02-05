@@ -1,7 +1,12 @@
 To do:
 * Experiment with title screen animations
-* Fix coin graphics to have equal spacing
 * Find some better sound effects
+
+Turn end sequence:
+1. Message shows, matched coins explode
+2. Remaining outer coins & center coin refresh
+3. New coins randomly come in
+4. "Start" message is displayed
 
 * Game notification idea
     1. Fade in a horizontal bar across the screen
@@ -20,3 +25,16 @@ Ideas
 * Add achievements?
 * Add an "exp" meter? w/ corresponding achievements for gained levels? If that's the case, hardest difficulty should give lots of exp.
 * Add a "score" component as well? Time taken/round + quota gained
+
+exp levels?
+
+10
+20
+30
+40
+50
+60
+70
+80
+90
+100

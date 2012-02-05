@@ -126,6 +126,22 @@
     [[SimpleAudioEngine sharedEngine] preloadEffect:@"coin.caf"];
     [[SimpleAudioEngine sharedEngine] preloadEffect:@"tick.caf"];
     
+    // Get user defaults
+	NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+	
+	// Register default high scores - this could be more easily done by loading a .plist instead of manually creating this nested object
+	NSDictionary *defaultDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
+                                     [NSNumber numberWithInt:0], @"gamesWon",
+                                     [NSNumber numberWithInt:0], @"gamesLost",
+                                     [NSNumber numberWithInt:0], @"averageTurnLength",
+                                     [NSNumber numberWithInt:0], @"coinsUsed",
+                                     [NSNumber numberWithInt:0], @"experience",
+                                     [NSNumber numberWithInt:1], @"level",
+                                     nil];
+	
+	[defaults registerDefaults:defaultDefaults];
+	[defaults synchronize];
+    
 	// Run the intro Scene
 	[[CCDirector sharedDirector] runWithScene:[LogoScene scene]];
 }
